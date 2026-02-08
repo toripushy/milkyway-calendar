@@ -4,73 +4,94 @@
 
 ## 项目概述
 
-MilkyWay Calendar 是一个基于 React + TypeScript + Vite 的前端应用，用户可以通过上传奶茶照片并记录饮用信息，在日历对应日期上展示个性化图标，方便回顾自己的饮品消费记录。
+MilkyWay Calendar 是一个基于 React + TypeScript + Vite 的全栈应用，支持 AI 智能识别奶茶照片、自动提取商品信息和热量数据，在日历上展示个性化图标，方便回顾自己的饮品消费记录。
 
 ## 技术栈
 
-| 维度 | 技术方案 | 版本 |
+| 维度 | 技术方案 | 版本/说明 |
 | --- | --- | --- |
-| **框架** | React + TypeScript | React 19.2, TS 5.9 |
-| **构建工具** | Vite | 7.2 |
+| **前端框架** | React + TypeScript | React 19, TS 5.9 |
+| **构建工具** | Vite | 7.3 |
+| **后端服务** | Node.js + Express | Node 20 |
+| **数据库** | SQLite (sql.js) | 纯 JS 实现 |
+| **AI 识别** | 通义千问 VL (qwen-vl-max) | 阿里云 |
 | **日期处理** | Day.js | 1.11 |
 | **图标库** | Lucide React | 0.563 |
-| **存储方式** | LocalStorage | - |
+| **部署方式** | Docker Compose | Nginx + Node.js |
 
 ## 项目结构
 
 ```
 milkyway-calendar/
-├── src/
-│   ├── App.tsx              # 主应用组件，管理状态和路由
-│   ├── main.tsx             # 应用入口
-│   ├── index.css            # 全局样式（奶茶色系主题）
-│   ├── App.css              # 组件样式
+├── src/                        # 前端源码
+│   ├── App.tsx                 # 主应用组件
+│   ├── main.tsx                # 应用入口
+│   ├── index.css               # 全局样式（抹茶绿+咖啡色主题）
 │   ├── components/
-│   │   ├── Calendar.tsx     # 日历组件 - 月视图展示
-│   │   ├── UploadModal.tsx  # 上传弹窗 - 打卡记录表单
-│   │   ├── DetailModal.tsx  # 详情弹窗 - 查看/编辑/删除记录
-│   │   └── TeaIcon.tsx      # 茶饮图标组件
+│   │   ├── Calendar.tsx        # 日历组件（显示商品名+热量）
+│   │   ├── UploadModal.tsx     # 上传弹窗（AI OCR 识别）
+│   │   ├── DetailModal.tsx     # 详情弹窗
+│   │   └── TeaIcon.tsx         # 茶饮图标组件
 │   ├── hooks/
-│   │   └── useRecords.ts    # 记录数据管理 Hook
+│   │   └── useRecords.ts       # 数据管理 Hook（支持 API 同步）
 │   ├── utils/
-│   │   └── storage.ts       # LocalStorage 存储工具函数
-│   ├── types/
-│   │   └── record.ts        # TypeScript 类型定义
-│   └── constants/
-│       └── icons.ts         # 图标预设配置
-├── public/
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-└── eslint.config.js
+│   │   ├── storage.ts          # 存储工具（localStorage + API）
+│   │   └── calorieMatch.ts     # 本地热量匹配
+│   ├── services/
+│   │   └── qwenVL.ts           # 通义千问 AI 识别服务
+│   ├── data/
+│   │   └── calorieDB.json      # 本地热量数据库
+│   └── types/
+│       └── record.ts           # TypeScript 类型定义
+├── server/                     # 后端服务
+│   ├── index.js                # Express API 服务
+│   ├── package.json            # 后端依赖
+│   └── Dockerfile              # 后端镜像
+├── docker-compose.yml          # Docker 编排
+├── Dockerfile                  # 前端镜像
+├── nginx.conf                  # Nginx 配置（含 API 代理）
+└── .env                        # 环境变量（API Key，不提交）
 ```
 
 ## 核心功能
 
-### 1. 交互日历界面
+### 1. AI 智能识别 (OCR)
 
-- **月视图切换**：默认显示当前月份，支持左右切换
-- **状态展示**：
-  - 未打卡日期：显示常规日期数字
-  - 已打卡日期：显示可爱的饮品图标
-  - 多条记录：右上角显示数量徽章
-- **悬浮预览**：鼠标悬停显示奶茶名称和备注
+- **自动识别**：上传奶茶照片，AI 自动识别文字信息
+- **信息提取**：
+  - 品牌名（喜茶、奈雪、瑞幸等）
+  - 商品名称
+  - 配料信息（珍珠、椰果等）
+  - 糖度/冰度
+  - 价格
+  - 店铺名称
+- **热量搜索**：AI 联网搜索真实热量数据（小红书、官网等）
+- **智能图标**：根据识别结果自动选择对应图标
 
-### 2. 打卡上传功能
+### 2. 交互日历界面
 
-- **图片上传**：支持拖拽或点击上传
+- **月视图切换**：支持左右切换月份
+- **信息展示**：
+  - 已打卡日期显示饮品图标
+  - 图标下方显示商品名和热量
+  - 多条记录显示数量徽章
+- **悬浮预览**：显示品牌、名称和备注
+
+### 3. 打卡上传功能
+
+- **多种上传方式**：
+  - 选择照片（支持 HEIC 格式）
+  - 直接拍照上传（推荐，避免格式问题）
 - **信息录入**：
-  - 必填项：商品名称、饮用日期（默认当天）
-  - 选填项：价格、糖度/冰度、评分（1-5星）、店铺名称、心情备注
-- **图标选择**：5 种预设图标（珍珠奶茶、水果茶、咖啡、鲜奶、抹茶）
-- **Q弹动画**：保存后图标以弹跳效果落入日历
+  - 自动填充：AI 识别的所有字段
+  - 手动补充：评分、心情备注等
+- **Q弹动画**：保存后图标弹跳落入日历
 
-### 3. 详情回顾
+### 4. 数据持久化
 
-- **点击查看**：点击日历图标打开详情弹窗
-- **完整信息**：展示照片、所有填写的参数
-- **编辑功能**：支持修改记录信息
-- **删除功能**：确认后删除记录
+- **SQLite 数据库**：服务器端持久存储
+- **跨设备同步**：同一内网所有设备共享数据
+- **离线回退**：网络异常时使用 localStorage 缓存
 
 ## 数据模型
 
@@ -79,6 +100,9 @@ interface MilkTeaRecord {
   id: string;           // 唯一标识
   date: string;         // 日期 (YYYY-MM-DD)
   name: string;         // 商品名称
+  brand?: string;       // 品牌名
+  ingredients?: string; // 配料
+  calories?: number;    // 热量（千卡）
   imageBase64?: string; // 图片 Base64
   price?: string;       // 价格
   sugarIce?: string;    // 糖度/冰度
@@ -96,78 +120,125 @@ type IconId = 'pearl' | 'fruit' | 'coffee' | 'milk' | 'matcha';
 
 ### 色彩系统
 
-采用温暖的奶茶色系：
+采用抹茶绿 + 咖啡色系的可爱风格：
 
 | 变量 | 颜色值 | 用途 |
 | --- | --- | --- |
-| `--color-bg` | #F5F5DC | 页面背景（米色） |
-| `--color-surface` | #FFFEF7 | 卡片背景 |
-| `--color-accent` | #D2B48C | 主色调（棕色） |
-| `--color-accent-dark` | #B8956B | 深色强调 |
-| `--color-text` | #3d3629 | 主文字 |
-| `--color-text-muted` | #6b5d4a | 次要文字 |
+| `--matcha` | #8FBC8F | 主色调（抹茶绿） |
+| `--matcha-light` | #C8E6C9 | 浅抹茶 |
+| `--coffee` | #8B4513 | 咖啡棕 |
+| `--coffee-light` | #D2B48C | 浅咖啡 |
+| `--cream` | #FFFEF7 | 奶油白 |
 
-### 响应式适配
+### 动画效果
 
-- 移动端优化：适配 320px 及以上宽度
-- 触摸友好：按钮和交互区域足够大
-- 弹窗自适应：在小屏幕上占满可用空间
+- 页面加载渐入动画
+- 日历格子弹跳动画
+- 图标摇晃动画
+- 弹窗弹出动画
+- 按钮悬停效果
 
-## 快速开始
+## 部署指南
 
-### 安装依赖
+### 本地开发
 
 ```bash
+# 安装前端依赖
 npm install
-```
 
-### 开发模式
+# 安装后端依赖
+cd server && npm install && cd ..
 
-```bash
+# 启动前端开发服务器
 npm run dev
+
+# 启动后端（另一个终端）
+cd server && npm start
 ```
 
-### 构建生产版本
+### Docker 部署
 
 ```bash
+# 构建前端
 npm run build
+
+# 启动服务（前端 + 后端）
+docker compose up -d
+
+# 查看日志
+docker logs milkyway-frontend-1
+docker logs milkyway-backend-1
+
+# 停止服务
+docker compose down
 ```
 
-### 预览生产版本
+### 环境变量
+
+创建 `.env` 文件：
+
+```env
+VITE_QWEN_API_KEY=你的通义千问API密钥
+```
+
+## API 接口
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| GET | `/api/records` | 获取所有记录 |
+| GET | `/api/records/month/:year/:month` | 按月获取记录 |
+| POST | `/api/records` | 新增记录 |
+| PUT | `/api/records/:id` | 更新记录 |
+| DELETE | `/api/records/:id` | 删除记录 |
+| GET | `/api/health` | 健康检查 |
+
+## 运维命令
 
 ```bash
-npm run preview
+# 重启服务
+docker compose restart
+
+# 查看运行状态
+docker ps
+
+# 备份数据库
+cp data/records.db backup/records_$(date +%Y%m%d).db
+
+# 更新部署
+npm run build
+docker compose up -d --build
 ```
 
-### 代码检查
+## 更新日志
 
-```bash
-npm run lint
-```
+### 2026-02-08
 
-## 数据存储
+- 新增 SQLite 数据库后端，支持数据持久化
+- 新增 Docker Compose 部署支持
+- 前端改为 API 调用 + localStorage 缓存双模式
+- 部署至本地服务器 (192.168.0.138:8088)
+- 推送至 GitHub 仓库
 
-当前版本使用浏览器 LocalStorage 进行数据持久化：
+### 2026-02-07
 
-- 存储 Key：`milkyway_records`
-- 数据格式：JSON 数组
-- 图片存储：Base64 编码
+- 新增 AI OCR 识别功能（通义千问 VL）
+- 新增热量 AI 联网搜索
+- 新增品牌、配料、热量字段
+- 日历显示商品名和热量
+- UI 改为抹茶绿+咖啡色可爱风格
+- 新增拍照上传功能（解决 HEIC 兼容性）
 
-> 注意：图片以 Base64 形式存储在 LocalStorage 中，大量图片可能导致存储空间不足。
+### 初始版本
 
-## 未来规划
+- 基础日历打卡功能
+- 图片上传和 localStorage 存储
+- 5 种预设图标
 
-- [ ] 数据统计：月度消费杯数、金额统计
-- [ ] 健康预警：连续打卡超过 3 天提醒糖分摄入
-- [ ] AI 识别：自动识别奶茶品牌和文字
-- [ ] 云端同步：支持 Supabase/Firebase 存储
-- [ ] 数据导出：支持导出记录为 CSV/JSON
+## 相关链接
 
-## 相关文件
-
-- 需求文档：`../# 奶茶饮用记录网页（MilkyWay Calendar）需求文档.ini`
-- Cursor Skill：`../.cursor/skills/ui-ux-pro-max/SKILL.md`
+- **GitHub 仓库**：https://github.com/toripushy/milkyway-calendar
+- **在线访问**：http://192.168.0.138:8088 (内网)
 
 ---
 
-**技术支持**: 本项目使用 [ui-ux-pro-max](../.cursor/skills/ui-ux-pro-max/SKILL.md) Cursor Skill 进行 UI/UX 设计辅助。
+**技术支持**: 本项目使用通义千问 VL 进行 AI 图像识别。
