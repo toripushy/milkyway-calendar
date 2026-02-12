@@ -140,6 +140,38 @@ type IconId = 'pearl' | 'fruit' | 'coffee' | 'milk' | 'matcha';
 
 ## 部署指南
 
+### CI/CD 自动部署
+
+推送到 `main` 分支会自动触发 GitHub Actions 部署到服务器。
+
+**首次配置**：在 GitHub 仓库 Settings → Secrets and variables → Actions 中配置：
+
+**Variables**（非敏感，Variables 标签页）：
+| 名称 | 值 |
+| --- | --- |
+| `DEPLOY_HOST` | 服务器 IP，如 `120.53.123.20` |
+| `DEPLOY_PORT` | SSH 端口，如 `1122` |
+| `DEPLOY_USER` | SSH 用户名，如 `yomikaede` |
+| `DEPLOY_PATH` | 可选，部署目录名，默认 `milkyway` |
+
+**Secrets**（敏感，Secrets 标签页）：
+| 名称 | 说明 |
+| --- | --- |
+| `DEPLOY_SSH_KEY` | 部署用 SSH 私钥（完整内容，含 `-----BEGIN...-----` 行） |
+| `VITE_QWEN_API_KEY` | 通义千问 API Key（前端 AI 识别用） |
+
+**配置 SSH 密钥**：
+```bash
+# 生成专用于部署的密钥（无密码）
+ssh-keygen -t ed25519 -C "deploy@milkyway" -f deploy_key -N ""
+
+# 将公钥加入服务器（替换为你的服务器信息）
+ssh-copy-id -i deploy_key.pub -p 1122 yomikaede@120.53.123.20
+
+# 将 deploy_key 私钥内容复制到 GitHub DEPLOY_SSH_KEY
+cat deploy_key
+```
+
 ### 本地开发
 
 ```bash

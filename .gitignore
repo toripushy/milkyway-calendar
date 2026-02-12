@@ -35,3 +35,7 @@ server/data/
 
 # Server node_modules
 server/node_modules
+
+# Deploy SSH keys (never commit)
+deploy_key
+deploy_key.pub
