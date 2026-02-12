@@ -232,7 +232,7 @@ export function UploadModal({ onClose, onSubmit, onBounceDate }: UploadModalProp
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal modal--upload" onClick={(e) => e.stopPropagation()}>
+      <div className="modal modal--upload pixel-box" onClick={(e) => e.stopPropagation()}>
         <div className="modal__header">
           <h3>打卡 · 记录一杯奶茶</h3>
           <button type="button" className="modal__close" onClick={onClose} aria-label="关闭">

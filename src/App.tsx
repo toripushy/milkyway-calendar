@@ -4,6 +4,7 @@ import { useRecords } from './hooks/useRecords';
 import { Calendar } from './components/Calendar';
 import { UploadModal } from './components/UploadModal';
 import { DetailModal } from './components/DetailModal';
+import { CatMascot } from './components/CatMascot';
 
 function App() {
   const { records, addRecord, updateRecord, deleteRecord } = useRecords();
@@ -31,17 +32,39 @@ function App() {
     : [];
 
   return (
-    <div className="app">
+    <div className="app app-container">
       <header className="app-header">
-        <h1 className="app-title">MilkyWay Calendar</h1>
-        <button
-          type="button"
-          className="btn btn--primary"
-          onClick={() => setUploadOpen(true)}
-        >
-          打卡
-        </button>
+        <div className="app-header__logo-wrap">
+          <div className="pixel-snowfall" aria-hidden>
+            {Array.from({ length: 24 }, (_, i) => (
+              <span
+                key={i}
+                className="pixel-star"
+                style={{
+                  left: `${(i * 4.5) % 100}%`,
+                  animationDelay: `${(i * 0.4) % 5}s`,
+                  animationDuration: `${4 + (i % 3)}s`,
+                }}
+              />
+            ))}
+          </div>
+          <img
+            src="/milkyway-calendar-headline-pixel.svg"
+            alt="MilkyWay calendar"
+            className="app-logo"
+          />
+        </div>
+        <div className="app-header__bottom">
+          <button
+            type="button"
+            className="btn btn--primary pixel-btn app-header__action"
+            onClick={() => setUploadOpen(true)}
+          >
+            ~bring your own drinks~
+          </button>
+        </div>
       </header>
+      <CatMascot />
       <Calendar
         currentMonth={currentMonth}
         onPrevMonth={() => setCurrentMonth((m) => m.subtract(1, 'month'))}

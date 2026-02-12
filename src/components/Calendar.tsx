@@ -1,4 +1,4 @@
-import type { Dayjs } from 'dayjs';
+import dayjs, { type Dayjs } from 'dayjs';
 import { useRecordsByMonth } from '../hooks/useRecords';
 import { TeaIcon } from './TeaIcon';
 import type { MilkTeaRecord } from '../types/record';
@@ -11,7 +11,7 @@ interface CalendarProps {
   bounceDate: string | null;
 }
 
-const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
+const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 export function Calendar({
   currentMonth,
@@ -59,7 +59,7 @@ export function Calendar({
           ‹
         </button>
         <h2 className="calendar__title">
-          {currentMonth.format('YYYY年 M月')}
+          {currentMonth.format('MMMM YYYY')}
         </h2>
         <button type="button" className="calendar__nav" onClick={onNextMonth} aria-label="下一月">
           ›
@@ -78,11 +78,12 @@ export function Calendar({
           const first = records[0];
           const hasBounce = bounceDate === date;
           const totalCalories = getTotalCalories(records);
-          
+          const isToday = date === dayjs().format('YYYY-MM-DD');
+
           return (
             <div
               key={date}
-              className={`calendar__cell ${!isCurrentMonth ? 'calendar__cell--other' : ''} ${records.length ? 'calendar__cell--has-record' : ''}`}
+              className={`calendar__cell ${!isCurrentMonth ? 'calendar__cell--other' : ''} ${records.length ? 'calendar__cell--has-record' : ''} ${isToday ? 'calendar__cell--highlight' : ''}`}
             >
               <span className="calendar__cell-day">{day}</span>
               {first && (
