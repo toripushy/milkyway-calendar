@@ -22,7 +22,7 @@ export function DetailModal({ date, records, onClose, onUpdate, onDelete }: Deta
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal modal--detail" onClick={(e) => e.stopPropagation()}>
+      <div className="modal modal--detail pixel-box" onClick={(e) => e.stopPropagation()}>
         <div className="modal__header">
           <h3>{date} · 共 {records.length} 条记录</h3>
           <button type="button" className="modal__close" onClick={onClose} aria-label="关闭">
